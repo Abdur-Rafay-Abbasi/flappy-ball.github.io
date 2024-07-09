@@ -55,10 +55,16 @@ class Bird {
         this.gravity = 0;
         this.velocity.y = 0;
     }
+
+    reset() {
+        this.position = { x: 100, y: 200 };
+        this.velocity = { y: 0 };
+        this.gravity = 0.5;
+    }
 }
 
-const obstopHeights = [200, 300, 450, 60];
-const obsdownHeights = [320, 220, 70, 460];
+const obstopHeights = [225, 325, 455, 85];
+const obsdownHeights = [325, 225, 95, 465];
 
 const initial = 700;
 const space = 400;
@@ -102,6 +108,11 @@ class Obstop {
     stop() {
         this.speed = 0
     }
+
+    reset(index) {
+        this.position.x = initial + index * space;
+        this.speed = 2;
+    }
 } 
 
 class Obsdown {
@@ -132,6 +143,12 @@ class Obsdown {
 
     stop() {
         this.speed = 0
+    }
+
+    reset(index) {
+        this.position.x = initial + index * space;
+        this.position.y = canvas.height - this.height;
+        this.speed = 2;
     }
 } 
 
@@ -228,16 +245,29 @@ const increase = () => {
     
 }
 
+const resetGame = () => {
+    bird.reset();
+    topObs.forEach((obs, index) => obs.reset(index));
+    downObs.forEach((obs, index) => obs.reset(index));
+    score = 0;
+    scoreE.textContent = '0';
+}
+
 window.addEventListener("keydown", ({ key }) => {
     if (key === " " || key === "ArrowUp") {
         bird.flap();
     }
-
+    if (key === "r") {
+        resetGame()
+    }
+  
 });
 
 window.addEventListener("touchstart", ()=> {
     bird.flap()
 })
+
+
 
 
 animate();
