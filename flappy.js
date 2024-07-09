@@ -2,13 +2,16 @@ const canvas = document.getElementById("canvas");
 const scoreE = document.getElementById("score")
 canvas.width = innerWidth - 30;
 canvas.height = innerHeight - 20;
-
 let score = 0;
-
 const ctx = canvas.getContext("2d");
+let end = false;
 
-const proportionalSize = (size) => {
-    return innerHeight < 500 ? Math.ceil((size / 500) * innerHeight) : size;
+const percH = (size) => {
+    return (size / 100) * canvas.height
+}
+
+const percW = (size) => {
+    return (size / 100) * canvas.width
 }
 
 class Bird {
@@ -22,9 +25,8 @@ class Bird {
         };
         this.gravity = 0.5;
         this.lift = -10;
-        this.width = proportionalSize(40);
-        this.height = proportionalSize(40);
-        
+        this.width = percH(7);
+        this.height = percH(7);        
     }
         
     draw() {
@@ -63,8 +65,8 @@ class Bird {
     }
 }
 
-const obstopHeights = [225, 325, 455, 85];
-const obsdownHeights = [325, 225, 95, 465];
+const obstopHeights = [percH(15), percH(70), percH(30), percH(25)];
+const obsdownHeights = [percH(60), percH(5), percH(45), percH(50)];
 
 const initial = 700;
 const space = 400;
@@ -85,10 +87,10 @@ class Obstop {
             x: pos,
             y: 0
         };
-        this.height = proportionalSize(height);
-        this.width = proportionalSize(80);
-        this.speed = 2;
-        
+        this.height = height;
+        this.width = percH(15);
+        this.speed = 2; 
+        this.passed = false;       
     }
     draw() {
         ctx.fillStyle = "red";
@@ -100,9 +102,8 @@ class Obstop {
         if (this.position.x + this.width < 0) {
             this.position.x =  obstopHeights.length * space; 
         }
-
-        this.draw();
-        
+        this.draw();        
+        this.passed = false;
     }
 
     stop() {
@@ -116,16 +117,15 @@ class Obstop {
 } 
 
 class Obsdown {
-    constructor(pos, height) {
-       
-        this.height = proportionalSize(height);
-        this.width = proportionalSize(80);
+    constructor(pos, height) {  
+        this.height = height;
+        this.width = percH(15);
         this.speed = 2;
         this.position = {
             x: pos,
             y : canvas.height - this.height
         };
-        
+        this.passed = false;
     }
     draw() {
         ctx.fillStyle = "black";
@@ -137,12 +137,13 @@ class Obsdown {
         if (this.position.x + this.width < 0) {
             this.position.x = obsdownHeights.length * space; 
         }
-        
         this.draw();
+        this.passed = false;
     }   
 
     stop() {
         this.speed = 0
+        end = true;
     }
 
     reset(index) {
@@ -155,7 +156,6 @@ class Obsdown {
 const stopObs = () => {
     topObs.forEach(obstacle => obstacle.stop());
     downObs.forEach(obstacle => obstacle.stop());
-
 }
 
 const topObs = obstopDimensions.map(
@@ -182,8 +182,6 @@ const animate = () => {
     downObs.forEach(downOb => {
         downOb.update();
     });
-    
-
 }
  
 const collision = () => {
@@ -220,8 +218,6 @@ const collision = () => {
         });
     };
 
-
-
 const capturePositions = () => {
     const positionsT = topObs.map(obstacle => ({
         x: obstacle.position.x,
@@ -235,14 +231,12 @@ const capturePositions = () => {
 
 const increase = () => {
     topObs.forEach(obs => {
-        if ( bird.position.x  > (obs.position.x + obs.width)) {
-            
+        if (!end && bird.position.x  > (obs.position.x + obs.width)) { 
+                    
             score++
-            scoreE.textContent = `${score / 50}`
-            
+            scoreE.textContent = `${Math.ceil(score / 50)}`            
         }
-    })
-    
+    })    
 }
 
 const resetGame = () => {
@@ -259,15 +253,11 @@ window.addEventListener("keydown", ({ key }) => {
     }
     if (key === "r") {
         resetGame()
-    }
-  
+    }  
 });
 
 window.addEventListener("touchstart", ()=> {
     bird.flap()
 })
-
-
-
 
 animate();
